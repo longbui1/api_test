@@ -1,0 +1,20 @@
+{
+    "vn": {
+        "empty": {
+            "code": "001.001.001",
+            "message": "Không được để rỗng!"
+        },
+        "length_min": {
+            "code": "001.001.002",
+            "message": "Nhập kí tự lớn hơn 6"
+        },
+        "length_max": {
+            "code": "001.001.003",
+            "message": "Nhập kí tự nhỏ hơn 255"
+        },
+        "special_character": {
+            "code": "001.001.004",
+            "message": "Không chứa kí tự đặc biệt"
+        }
+    }
+}

@@ -11,8 +11,12 @@ app.use(express.urlencoded({ extended: true }));
 const catController = require('./src/controller/catControl');
 const postController = require('./src/controller/postControl');
 
-// router cate
-app.get('/cate', catController.getCate);
+//router cate
+app.get('/cate', catController.getListAll);
+app.get('/listone/:cateId', catController.getListOne);
+app.post('/cate', catController.createCate);
+app.delete('/cate/:cateId', catController.deleteCate);
+app.patch('/cate/:cateId', catController.updateCate);
 // router post
 app.get('/getList', postController.getListPost);
 app.get('/getDetail/:postId', postController.getDetail);
