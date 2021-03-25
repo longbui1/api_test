@@ -1,0 +1,16 @@
+{
+    "vn": {
+        "missing_data": {
+            "code": "000.000.001",
+            "message": "thieu du lieu"
+        },
+        "post_not_found": {
+            "code": "00.000.002",
+            "message": "post khong ton tai"
+        },
+        "id_not_found": {
+            "code": "000.000.003",
+            "message": "ID khong ton tai"
+        }
+    }
+}

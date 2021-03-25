@@ -11,9 +11,15 @@ app.use(express.urlencoded({ extended: true }));
 const catController = require('./src/controller/catControl');
 const postController = require('./src/controller/postControl');
 
-//router
+// router cate
 app.get('/cate', catController.getCate);
-app.get('/post', postController.getPost);
+// router post
+app.get('/getList', postController.getListPost);
+app.get('/getDetail/:postId', postController.getDetail);
+app.post('/createPost', postController.createPost);
+app.patch('/disable/:postId', postController.disablePost);
+app.patch('/update/:postId', postController.updatePost);
+app.delete('/delete/:postId', postController.deletePost);
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
