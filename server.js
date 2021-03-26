@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = 3001;
 // import connect mongodb
 const connect = require('./config/connect');
 connect.connect();
@@ -15,18 +15,19 @@ const postController = require('./src/controller/postControl');
 const authController = require('./src/controller/authControl');
 
 //router cate
-app.get('/cate', catController.getListAll);
-app.get('/listone/:cateId', catController.getListOne);
-app.post('/cate', catController.createCate);
-app.delete('/cate/:cateId', catController.deleteCate);
-app.patch('/cate/:cateId', catController.updateCate);
+app.get('/getListCate', catController.getListAll);
+app.get('/getDetailCate/:cateId', catController.getListOne);
+app.post('/createCate', verifyLogin, catController.createCate);
+app.delete('/deleteCate/:cateId', verifyLogin, catController.deleteCate);
+app.patch('/updateCate/:cateId', verifyLogin, catController.updateCate);
 // router post
 app.get('/getList', postController.getListPost);
 app.get('/getDetail/:postId', postController.getDetail);
-app.post('/createPost', postController.createPost);
-app.patch('/disable/:postId', postController.disablePost);
-app.patch('/update/:postId', postController.updatePost);
-app.delete('/delete/:postId', postController.deletePost);
+app.post('/createPost', verifyLogin, postController.createPost);
+app.patch('/disable/:postId', verifyLogin, postController.disablePost);
+app.patch('/enable/:postId', verifyLogin, postController.enablePost);
+app.patch('/update/:postId', verifyLogin, postController.updatePost);
+app.delete('/delete/:postId', verifyLogin, postController.deletePost);
 //router login
 app.get('/getUser', verifyLogin, authController.getUser);
 app.post('/createUser', authController.createUser);

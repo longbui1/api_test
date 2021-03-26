@@ -1,6 +1,15 @@
 const User = require('../model/userModel');
 const bcrypt = require('bcrypt');
 const localStorage = require('localStorage');
+const { loginValidator } = require('../middleware/validateLogin');
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+dotenv.config();
+
+//sign token
+function generateAccessToken(role) {
+    return jwt.sign(role, process.env.TOKEN_SECRET, { expiresIn: '1800s' });
+}
 
 const createUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
@@ -35,6 +44,10 @@ const createUser = async (req, res) => {
 };
 
 const login = async (req, res) => {
+    const { error } = loginValidator(req.body);
+
+    if (error) return res.status(422).send(error.details[0].message);
+
     //tao user moi
     const user = await User.findOne({ email: req.body.email });
     //check user email
@@ -46,13 +59,13 @@ const login = async (req, res) => {
         req.body.password,
         user.password
     );
-    console.log(checkPassword);
     //check password
     if (!checkPassword)
         return res.status(422).send(' mật khẩu không chính xác');
 
-    // return res.send(`User ${user.fullName} đã đăng nhập`);
-    return res.send(localStorage.setItem('Role', user.role));
+    //send token using jwt
+    const token = generateAccessToken({ role: user.role });
+    return res.send(localStorage.setItem('auth', token));
 };
 
 const getUser = async (req, res) => {

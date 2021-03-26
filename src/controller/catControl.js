@@ -1,49 +1,45 @@
 // model
 const Cate = require('../model/cateModel');
 const valiCate = require('./../../lang/cate.json').vn;
+const { cateValidator } = require('../middleware/validateCate');
 
 //post Category
 const createCate = async (req, res) => {
-    // if (req.body.name == req.body.name) {
-    //     return res.status(400).send({
-    //         message: 'Name trung',
-    //     });
-    // }
+    const { error } = cateValidator(req.body);
 
-    // const { error } = validateCate(req.body);
+    if (error) return res.status(422).send(error.details[0].message);
 
-    // if (error) return response.status(422).send(error.details[0].message);
-
-    // check validate name
     const checkNameExist = await Cate.findOne({ name: req.body.name });
-    if (checkNameExist) return res.status(402).send({ message: 'Trùng tên' });
+    if (checkNameExist)
+        return res.status(402).send({ message: 'Name does not exist' });
 
     const cate = new Cate({
         name: req.body.name,
         description: req.body.description,
     });
 
-    if (!cate.name || !cate.description) {
-        return res.status(400).json({ status: false, data: valiCate.empty });
-    }
+    // if (!cate.name || !cate.description) {
+    //     return res.status(400).json({ status: false, data: valiCate.empty });
+    // }
 
-    if (cate.name.length < 6 || cate.description.length < 6) {
-        return res
-            .status(400)
-            .json({ status: false, data: valiCate.length_min });
-    }
+    // if (cate.name.length < 6 || cate.description.length < 6) {
+    //     return res
+    //         .status(400)
+    //         .json({ status: false, data: valiCate.length_min });
+    // }
 
-    if (cate.name.length > 255 || cate.description.length > 255) {
-        return res
-            .status(400)
-            .json({ status: false, data: validate.length_max });
-    }
+    // if (cate.name.length > 255 || cate.description.length > 255) {
+    //     return res
+    //         .status(400)
+    //         .json({ status: false, data: valiCate.length_max });
+    // }
 
-    // let catename = req.body.name;
+    // // let catename = req.body.name;
 
-    // var format = /^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/;
-    // if (catename.match(format)) {
-    //     return res.status(400).send('Không được chưa kí tự đặc biệt 1');
+    // var format = /^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+    // if (cate.name.match(format)) {
+    //     return res.status(400).send('Không được chưa kí tự đặc biệt đầu tiên');
+    // }
     // } else {
     //     return res.send('Không được chưa kí tự đặc biệt');
     // }
@@ -51,11 +47,11 @@ const createCate = async (req, res) => {
     //save
     cate.save()
         .then((data) => {
-            res.send(data);
+            return res.send(data);
         })
         .catch((err) => {
-            res.status(500).send({
-                message: 'Không lưu được !',
+            return res.status(500).send({
+                message: 'Save faild !',
             });
         });
 };
@@ -64,10 +60,10 @@ const createCate = async (req, res) => {
 const getListAll = async (req, res) => {
     Cate.find()
         .then((cates) => {
-            res.send(cates);
+            return res.send(cates);
         })
         .catch((err) => {
-            res.status(500).send({
+            return res.status(500).send({
                 message: err,
             });
         });
@@ -75,20 +71,13 @@ const getListAll = async (req, res) => {
 
 //list one
 const getListOne = async (req, res) => {
-    // const cateId = req.body._id;
     Cate.findById(req.params.cateId)
         .then((cate) => {
             if (!cate) {
-                res.status(400).send({
-                    message: 'Không tìm thấy id: ' + req.params.cateId,
+                return res.status(400).send({
+                    message: 'Category is not find id : ' + req.params.cateId,
                 });
-            }
-            // if (!req.params.cateId) {
-            //     res.status(400).send({
-            //         message: 'khong ton tai',
-            //     });
-            // }
-            else res.send(cate);
+            } else return res.send(cate);
         })
         .catch((err) => {
             // if (err.kind === 'ObjectId') {
@@ -100,36 +89,39 @@ const getListOne = async (req, res) => {
             //     message: 'Error retrieving cate with id ' + req.params.cateId,
             // });
             return res.status(400).send({
-                message: 'Không tồn tại',
+                message: 'Category does not exist !',
             });
         });
 };
 
 //update Category
 const updateCate = async (req, res) => {
-    if (!req.body.name || !req.body.description) {
-        return res.status(400).send({
-            message: 'Dữ liệu không được để trống !',
-        });
-    }
+    //check name
+    const checkNameExist = await Cate.findOne({ name: req.body.name });
+    if (checkNameExist) return res.status(402).send({ message: 'Used name' });
 
-    if (req.body.name.length < 6 || req.body.description.length < 6) {
-        return res
-            .status(400)
-            .json({ status: false, data: valiCate.length_min });
-    }
+    //validate
+    const { error } = cateValidator(req.body);
 
-    if (req.body.name.length > 255 || req.body.description.length > 255) {
-        return res
-            .status(400)
-            .json({ status: false, data: validate.length_max });
-    }
+    if (error) return res.status(422).send(error.details[0].message);
 
-    // const checkNameExist = await Cate.findOne({ name: req.body.name });
-    // if (checkNameExist) return res.status(402).send({ message: 'Tên trùng' });
+    // if (!req.body.name || !req.body.description) {
+    //     return res.status(400).send({
+    //         message: 'Input does not empty !',
+    //     });
+    // }
 
-    // let cateName = req.params.name;
-    // let cateDescription = req.params.description;
+    // if (req.body.name.length < 6 || req.body.description.length < 6) {
+    //     return res
+    //         .status(400)
+    //         .json({ status: false, data: valiCate.length_min });
+    // }
+
+    // if (req.body.name.length > 255 || req.body.description.length > 255) {
+    //     return res
+    //         .status(400)
+    //         .json({ status: false, data: validate.length_max });
+    // }
 
     Cate.findByIdAndUpdate(
         req.params.cateId,
@@ -142,15 +134,14 @@ const updateCate = async (req, res) => {
     )
         .then((cate) => {
             if (!cate) {
-                res.status(400).send({
-                    message: 'Không tìm thấy id : ' + req.params.cateId,
+                return res.status(400).send({
+                    message: 'Category is not find id : ' + req.params.cateId,
                 });
-            } else res.send(cate);
-            // res.send({ message: 'Update succesfully !' });
+            } else return res.send(cate);
         })
         .catch((err) => {
-            res.status(500).send({
-                message: 'Id không tồn tại',
+            return res.status(500).send({
+                message: 'Category does not exist',
             });
         });
 };
@@ -160,17 +151,17 @@ const deleteCate = async (req, res) => {
     Cate.findByIdAndDelete(req.params.cateId)
         .then((cate) => {
             if (!cate) {
-                res.status(500).send({
-                    message: 'Không tìm thấy id : ' + req.params.cateId,
+                return res.status(500).send({
+                    message: 'Category is not find id : ' + req.params.cateId,
                 });
             } else
-                res.send({
-                    message: 'Xóa thành công !',
+                return res.send({
+                    message: 'Delete succesfully !',
                 });
         })
         .catch((err) => {
-            res.status(500).send({
-                message: 'Id không tồn tại !',
+            return res.status(500).send({
+                message: 'Category does not exist !',
             });
         });
 };

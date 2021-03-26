@@ -3,6 +3,7 @@ const Post = require('../model/postModel');
 const Cate = require('../model/cateModel');
 // lang
 const errPost = require('../../lang/post.json').vn;
+const { postValidator } = require('../middleware/validatePost');
 
 // list post
 const getListPost = async (req, res) => {
@@ -50,11 +51,14 @@ const createPost = async (req, res) => {
     });
     try {
         // check data empty
-        if (!post.title || !post.description || !post.content) {
-            return res
-                .status(400)
-                .json({ status: false, data: errPost.missing_data });
-        }
+        // if (!post.title || !post.description || !post.content) {
+        //     return res
+        //         .status(400)
+        //         .json({ status: false, data: errPost.missing_data });
+        // }
+        const { error } = postValidator(req.body);
+
+        if (error) return res.status(422).send(error.details[0].message);
         // check  selectCate if null set unCate default
         if (post.selectCate.length === 0) {
             const getIdUnCat = await Cate.findOne({ name: 'unCate' });
@@ -64,6 +68,38 @@ const createPost = async (req, res) => {
         const savePost = await post.save();
         // return to data
         return res.status(200).json({ status: true, data: savePost });
+    } catch (err) {
+        console.log(err);
+    }
+};
+const enablePost = async (req, res) => {
+    const postId = req.params.postId;
+    try {
+        // check length objectId
+        if (postId.length !== 24) {
+            return res
+                .status(400)
+                .json({ status: false, data: errPost.id_not_found });
+        }
+        // search buy id
+        const checkPost = await Post.findById(postId);
+        // post null return bug
+        if (!checkPost) {
+            return res
+                .status(400)
+                .json({ status: false, data: errPost.post_not_found });
+        }
+        // disable
+        await Post.updateOne(
+            { _id: postId },
+            {
+                $set: {
+                    status: true,
+                },
+            }
+        );
+        // return to data
+        return res.status(200).json({ status: true });
     } catch (err) {
         console.log(err);
     }
@@ -122,6 +158,9 @@ const updatePost = async (req, res) => {
                 .json({ status: false, data: errPost.id_not_found });
         }
         // check data input
+        const { error } = postValidator(req.body);
+
+        if (error) return res.status(422).send(error.details[0].message);
 
         // update posts
         const post = await Post.updateOne(
@@ -171,6 +210,7 @@ module.exports = {
     getDetail,
     createPost,
     disablePost,
+    enablePost,
     updatePost,
     deletePost,
 };
