@@ -1,9 +1,8 @@
-var ObjectId = require('mongodb').ObjectID;
 // model
 const Post = require('../model/postModel');
+const Cate = require('../model/cateModel');
 // lang
 const errPost = require('../../lang/post.json').vn;
-const tryCatchCustom = require('../../utils/tryCatch');
 
 // list post
 const getListPost = async (req, res) => {
@@ -51,15 +50,15 @@ const createPost = async (req, res) => {
     });
     try {
         // check data empty
-        if (
-            !post.title ||
-            !post.selectCate ||
-            !post.description ||
-            !post.content
-        ) {
+        if (!post.title || !post.description || !post.content) {
             return res
                 .status(400)
                 .json({ status: false, data: errPost.missing_data });
+        }
+        // check  selectCate if null set unCate default
+        if (post.selectCate.length === 0) {
+            const getIdUnCat = await Cate.findOne({ name: 'unCate' });
+            post.selectCate = getIdUnCat._id;
         }
         // create new post
         const savePost = await post.save();
