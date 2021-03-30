@@ -1,26 +1,27 @@
 // model
 const Cate = require('../model/cateModel');
+const Post = require('../model/postModel');
 const valiCate = require('./../../lang/cate.json').vn;
 const { cateValidator } = require('../middleware/validateCate');
 
 //post Category
 const createCate = async (req, res) => {
-    const { error } = cateValidator(req.body);
+    // const { error } = cateValidator(req.body);
 
-    if (error) return res.status(422).send(error.details[0].message);
+    // if (error) return res.status(422).send(error.details[0].message);
 
     const checkNameExist = await Cate.findOne({ name: req.body.name });
     if (checkNameExist)
         return res.status(402).send({ message: 'Name does not exist' });
 
+    // if (!cate.name || !cate.description) {
+    //     return res.status(400).json({ status: false, data: valiCate.empty });
+    // }
+
     const cate = new Cate({
         name: req.body.name,
         description: req.body.description,
     });
-
-    // if (!cate.name || !cate.description) {
-    //     return res.status(400).json({ status: false, data: valiCate.empty });
-    // }
 
     // if (cate.name.length < 6 || cate.description.length < 6) {
     //     return res
@@ -36,10 +37,10 @@ const createCate = async (req, res) => {
 
     // // let catename = req.body.name;
 
-    // var format = /^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
-    // if (cate.name.match(format)) {
-    //     return res.status(400).send('Không được chưa kí tự đặc biệt đầu tiên');
-    // }
+    var format = /^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+    if (cate.name.match(format)) {
+        return res.status(400).send('Không được chưa kí tự đặc biệt đầu tiên');
+    }
     // } else {
     //     return res.send('Không được chưa kí tự đặc biệt');
     // }
@@ -101,27 +102,20 @@ const updateCate = async (req, res) => {
     if (checkNameExist) return res.status(402).send({ message: 'Used name' });
 
     //validate
-    const { error } = cateValidator(req.body);
+    // const { error } = cateValidator(req.body);
 
-    if (error) return res.status(422).send(error.details[0].message);
+    // if (error) return res.status(422).send(error.details[0].message);
 
-    // if (!req.body.name || !req.body.description) {
-    //     return res.status(400).send({
-    //         message: 'Input does not empty !',
-    //     });
-    // }
+    if (!req.body.name || !req.body.description) {
+        return res.status(400).send({
+            message: 'Input does not empty !',
+        });
+    }
 
-    // if (req.body.name.length < 6 || req.body.description.length < 6) {
-    //     return res
-    //         .status(400)
-    //         .json({ status: false, data: valiCate.length_min });
-    // }
-
-    // if (req.body.name.length > 255 || req.body.description.length > 255) {
-    //     return res
-    //         .status(400)
-    //         .json({ status: false, data: validate.length_max });
-    // }
+    var format = /^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+    if (req.body.name.match(format)) {
+        return res.status(400).send('Không được chưa kí tự đặc biệt đầu tiên');
+    }
 
     Cate.findByIdAndUpdate(
         req.params.cateId,
@@ -148,7 +142,35 @@ const updateCate = async (req, res) => {
 
 //delete Category
 const deleteCate = async (req, res) => {
-    Cate.findByIdAndDelete(req.params.cateId)
+    const cateId = req.params.cateId;
+    const getPost = await Post.findOne({ selectCate: cateId });
+    // return unCatId
+    if (getPost.selectCate.length === 1) {
+        const getIdUnCat = await Cate.findOne({ name: 'unCate' });
+        // update posts
+        await Post.updateOne(
+            { _id: getPost._id },
+            {
+                $set: {
+                    selectCate: getIdUnCat._id,
+                },
+            }
+        );
+    }
+    // remove one id when multiID
+    if (getPost.selectCate.length > 1) {
+        // update posts
+        await Post.updateOne(
+            { _id: getPost._id },
+            {
+                $pull: {
+                    selectCate: cateId,
+                },
+            }
+        );
+    }
+    // delete
+    Cate.findByIdAndDelete(cateId)
         .then((cate) => {
             if (!cate) {
                 return res.status(500).send({

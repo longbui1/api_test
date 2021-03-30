@@ -51,14 +51,14 @@ const createPost = async (req, res) => {
     });
     try {
         // check data empty
-        // if (!post.title || !post.description || !post.content) {
-        //     return res
-        //         .status(400)
-        //         .json({ status: false, data: errPost.missing_data });
-        // }
-        const { error } = postValidator(req.body);
+        if (!post.title || !post.description || !post.content) {
+            return res
+                .status(400)
+                .json({ status: false, data: errPost.missing_data });
+        }
+        // const { error } = postValidator(req.body);
 
-        if (error) return res.status(422).send(error.details[0].message);
+        // if (error) return res.status(422).send(error.details[0].message);
         // check  selectCate if null set unCate default
         if (post.selectCate.length === 0) {
             const getIdUnCat = await Cate.findOne({ name: 'unCate' });
@@ -158,9 +158,9 @@ const updatePost = async (req, res) => {
                 .json({ status: false, data: errPost.id_not_found });
         }
         // check data input
-        const { error } = postValidator(req.body);
+        // const { error } = postValidator(req.body);
 
-        if (error) return res.status(422).send(error.details[0].message);
+        // if (error) return res.status(422).send(error.details[0].message);
 
         // update posts
         const post = await Post.updateOne(

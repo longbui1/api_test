@@ -18,8 +18,8 @@ const authController = require('./src/controller/authControl');
 app.get('/getListCate', catController.getListAll);
 app.get('/getDetailCate/:cateId', catController.getListOne);
 app.post('/createCate', verifyLogin, catController.createCate);
-app.delete('/deleteCate/:cateId', verifyLogin, catController.deleteCate);
-app.patch('/updateCate/:cateId', verifyLogin, catController.updateCate);
+app.delete('/deleteCate/:cateId', catController.deleteCate);
+app.patch('/updateCate/:cateId', catController.updateCate);
 // router post
 app.get('/getList', postController.getListPost);
 app.get('/getDetail/:postId', postController.getDetail);
